@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 export function Gallery() {
   const images = [
@@ -11,88 +11,80 @@ export function Gallery() {
     "./img/couple8.jpg",
   ];
 
-  const galleryWrapperRef = useRef(null);
-  const scrollSpeed = 1.0; // pixels per frame
+  const galleryRef = useRef(null);
+  const speed = 40; // pixels per second
 
   useEffect(() => {
-    const galleryWrapper = galleryWrapperRef.current;
-    if (!galleryWrapper) return;
+    const gallery = galleryRef.current;
+    if (!gallery) return;
 
-    let animationFrameId;
-    let lastTimestamp;
+    let start;
+    let x = 0;
+    const totalWidth = gallery.scrollWidth / 2;
 
-    const totalScrollWidth = galleryWrapper.scrollWidth / 2; // since we duplicate images
+    const animate = (timestamp) => {
+      if (!start) start = timestamp;
+      const elapsed = (timestamp - start) / 1000; // seconds
+      start = timestamp;
 
-    const step = (timestamp) => {
-      if (!lastTimestamp) lastTimestamp = timestamp;
-      const elapsed = timestamp - lastTimestamp;
-      lastTimestamp = timestamp;
+      x -= speed * elapsed;
+      if (Math.abs(x) >= totalWidth) x = 0;
 
-      // Move scrollLeft by speed * elapsed time (scaled)
-      // We use elapsed to make speed framerate independent
-      galleryWrapper.scrollLeft += scrollSpeed * elapsed * 0.1;
+      gallery.style.transform = `translateX(${x}px)`;
 
-      // Reset scrollLeft to 0 when we've scrolled past the first half (original images)
-      if (galleryWrapper.scrollLeft >= totalScrollWidth) {
-        galleryWrapper.scrollLeft = galleryWrapper.scrollLeft - totalScrollWidth;
-      }
-
-      animationFrameId = requestAnimationFrame(step);
+      requestAnimationFrame(animate);
     };
 
-    animationFrameId = requestAnimationFrame(step);
-
-    return () => cancelAnimationFrame(animationFrameId);
+    requestAnimationFrame(animate);
   }, []);
 
-  // Duplicate images array to create seamless loop
   const duplicatedImages = [...images, ...images];
 
   return (
     <section id="gallery">
-      <div className="gallery-container">
+      <div
+        className="gallery-container"
+        style={{
+          overflow: "hidden",
+          width: "100%",
+        }}
+      >
         <div
-          className="gallery-wrapper"
-          ref={galleryWrapperRef}
-          style={{ overflow: "hidden", whiteSpace: "nowrap" }}
+          className="gallery"
+          ref={galleryRef}
+          style={{
+            display: "flex",
+            gap: "1.5rem",
+            padding: "1rem 2rem",
+            willChange: "transform",
+          }}
         >
-          <div
-            className="gallery"
-            style={{
-              display: "inline-flex",
-              gap: "1.5rem",
-              padding: "1rem 2rem",
-            }}
-          >
-            {duplicatedImages.map((src, idx) => (
-              <div
-                key={idx}
-                className="gallery-item"
+          {duplicatedImages.map((src, idx) => (
+            <div
+              key={idx}
+              className="gallery-item"
+              style={{
+                flex: "0 0 auto",
+                width: "250px",
+                height: "300px",
+                borderRadius: "20px",
+                overflow: "hidden",
+                boxShadow: "0 6px 10px rgba(121, 81, 170, 0.3)",
+              }}
+            >
+              <img
+                src={src}
+                alt={`Couple ${idx + 1}`}
                 style={{
-                  flex: "0 0 auto",
-                  width: "250px",
-                  height: "300px",
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
                   borderRadius: "20px",
-                  overflow: "hidden",
-                  boxShadow: "0 6px 10px rgba(121, 81, 170, 0.3)",
-                  cursor: "pointer",
+                  display: "block",
                 }}
-              >
-                <img
-                  src={src}
-                  alt={`Couple ${idx + 1}`}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    borderRadius: "20px",
-                    display: "block",
-                    transition: "transform 0.4s ease, filter 0.4s ease",
-                  }}
-                />
-              </div>
-            ))}
-          </div>
+              />
+            </div>
+          ))}
         </div>
       </div>
     </section>

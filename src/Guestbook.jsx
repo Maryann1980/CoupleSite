@@ -31,6 +31,7 @@ export function Guestbook() {
   return (
     <section id="guestbook" className="guestbook">
       <h2>From friends & Family</h2>
+      
       <form id="guestbook-form" onSubmit={handleSubmit}>
         <input
           type="text"
